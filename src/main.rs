@@ -10,7 +10,7 @@ use game::Game;
 
 
 fn main() {
-    let (width, height) = (30, 30);
+    let (width, height) = (32, 32);
 
     let mut window: PistonWindow =
         WindowSettings::new("Rusty Pong",
