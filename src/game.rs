@@ -5,6 +5,8 @@ use crate::drawing::{draw_rectangle, draw_block};
 
 const BORDER_COLOR: Color = [0.741, 0.765, 0.78, 1.0];
 const PADDLE_COLOR: Color = [0.18, 0.80, 0.44, 1.0];
+const SPEED: i32 = 1;
+const PADDLE_LENGTH: i32 = 4;
 
 
 #[derive(Clone, Copy, PartialEq)]
@@ -17,7 +19,6 @@ pub struct Game {
     width: i32,
     height: i32,
     player_1: Paddle,
-    player_2: Paddle,
 }
 
 impl Game {
@@ -26,13 +27,11 @@ impl Game {
             width: width,
             height: height,
             player_1: Paddle::new((width / 2) - 2, height - 3),
-            player_2: Paddle::new((width / 2) - 2, 2),
         }
     }
 
     pub fn draw(&self, con: &Context, g: &mut G2d) {
         self.player_1.draw(con, g);
-        self.player_2.draw(con, g);
 
         draw_rectangle(BORDER_COLOR, 0, 0, self.width, 1, con, g);
         draw_rectangle(BORDER_COLOR, 0, self.height - 1, self.width, 1, con, g);
@@ -41,35 +40,45 @@ impl Game {
     }
 
     pub fn update(&mut self) {
+        self.detect_paddle_wall_collision();
+        self.player_1.update();
     }
 
     pub fn key_pressed(&mut self, key: Key) {
-        match key {
-            Key::Left => self.player_1.move_paddle(Movement::Left),
-            Key::Right => self.player_1.move_paddle(Movement::Right),
-            Key::A => self.player_2.move_paddle(Movement::Left),
-            Key::D => self.player_2.move_paddle(Movement::Right),
-            _ => {}
+        let dir = match key {
+            Key::Left => Movement::Left,
+            Key::Right => Movement::Right,
+            _ => Movement::Iddle
+        };
+        self.player_1.set_direction(dir);
+    }
+
+    pub fn key_released(&mut self, key: Key) {
+        self.player_1.stop();
+    }
+
+    fn detect_paddle_wall_collision(&mut self) {
+        match self.player_1.movement_direction {
+            Movement::Right => {
+                if self.player_1.x + SPEED >= self.width - PADDLE_LENGTH {
+                    self.player_1.stop();
+                }
+            },
+            Movement::Left => {
+                if self.player_1.x - SPEED <= 0 {
+                    self.player_1.stop();
+                }
+            },
+            Movement::Iddle => {}
         }
-        // let dir_player_1 = match key {
-        //     Key::Left => Some(Movement::Left),
-        //     Key::Right => Some(Movement::Right),
-        //     _ => None
-        // };
-        // let dir_player_2 = match key {
-        //     Key::A => Some(Movement::Left),
-        //     Key::D => Some(Movement::Right),
-        //     _ => None
-        // };
-        // self.player_1.move_paddle(dir_player_1);
-        // self.player_2.move_paddle(dir_player_2);
     }
 }
 
 pub struct Paddle {
-    x: i32,
+    pub x: i32,
     y: i32,
-    moving_direction: Movement,
+    pub movement_direction: Movement,
+    length: i32
 }
 
 impl Paddle {
@@ -77,32 +86,35 @@ impl Paddle {
         Paddle {
             x: x,
             y: y,
-            moving_direction: Movement::Iddle
+            movement_direction: Movement::Iddle,
+            length: PADDLE_LENGTH,
         }
     }
 
     pub fn draw(&self, con: &Context, g: &mut G2d) {
         // Paddle: 4 blocks long
-        draw_block(PADDLE_COLOR, self.x, self.y, con, g);
-        draw_block(PADDLE_COLOR, self.x + 1, self.y, con, g);
-        draw_block(PADDLE_COLOR, self.x + 2, self.y, con, g);
-        draw_block(PADDLE_COLOR, self.x + 3, self.y, con, g);
+        for i in 0..self.length {
+            draw_block(PADDLE_COLOR, self.x + i, self.y, con, g);
+        }
     }
 
-    pub fn move_paddle(&mut self, dir: Movement) {
-        match dir {
-            Movement::Left => self.x -= 1,
-            Movement::Right => self.x += 1,
+    pub fn update(&mut self) {
+        match self.movement_direction {
+            Movement::Left => {
+                self.x -= SPEED;
+            },
+            Movement::Right => {
+                self.x += SPEED;
+            },
             Movement::Iddle => {}
         }
-        // match dir {
-        //     Some(d) => self.moving_direction = d,
-        //     None => {}
-        // }
-        // match self.moving_direction {
-        //     Movement::Left => self.x -= 1,
-        //     Movement::Right => self.x += 1,
-        //     Movement::Iddle => {}
-        // }
+    }
+
+    pub fn set_direction(&mut self, dir: Movement) {
+        self.movement_direction = dir;
+    }
+
+    pub fn stop(&mut self) {
+        self.movement_direction = Movement::Iddle;
     }
 }

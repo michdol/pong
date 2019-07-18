@@ -10,7 +10,7 @@ use game::Game;
 
 
 fn main() {
-    let (width, height) = (32, 32);
+    let (width, height) = (42, 32);
 
     let mut window: PistonWindow =
         WindowSettings::new("Rusty Pong",
@@ -21,6 +21,9 @@ fn main() {
     while let Some(event) = window.next() {
         if let Some(Button::Keyboard(key)) = event.press_args() {
             game.key_pressed(key);
+        }
+        if let Some(Button::Keyboard(key)) = event.release_args() {
+            game.key_released(key);
         }
 
         window.draw_2d(&event, |context, graphics| {
