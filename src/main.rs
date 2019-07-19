@@ -4,6 +4,8 @@ use piston_window::*;
 
 mod drawing;
 mod game;
+mod paddle;
+mod ball;
 
 use drawing::to_gui_coord_u32;
 use game::Game;
