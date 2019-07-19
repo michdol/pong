@@ -6,7 +6,7 @@ use crate::drawing::{draw_rectangle, draw_block};
 const BORDER_COLOR: Color = [0.741, 0.765, 0.78, 1.0];
 const PADDLE_COLOR: Color = [0.18, 0.80, 0.44, 1.0];
 const SPEED: i32 = 1;
-const PADDLE_LENGTH: i32 = 4;
+const PADDLE_LENGTH: i32 = 5;
 
 
 #[derive(Clone, Copy, PartialEq)]
@@ -21,20 +21,21 @@ pub struct Game {
     player_1: Paddle,
 }
 
+
 impl Game {
     pub fn new(width: i32, height: i32) -> Game {
         Game {
             width: width,
             height: height,
-            player_1: Paddle::new((width / 2) - 2, height - 3),
+            player_1: Paddle::new((width / 2) - 2, height - 2),
         }
     }
 
     pub fn draw(&self, con: &Context, g: &mut G2d) {
         self.player_1.draw(con, g);
 
-        draw_rectangle(BORDER_COLOR, 0, 0, self.width, 1, con, g);
-        draw_rectangle(BORDER_COLOR, 0, self.height - 1, self.width, 1, con, g);
+        // draw_rectangle(BORDER_COLOR, 0, 0, self.width, 1, con, g);
+        // draw_rectangle(BORDER_COLOR, 0, self.height - 1, self.width, 1, con, g);
         draw_rectangle(BORDER_COLOR, 0, 0, 1, self.height, con, g);
         draw_rectangle(BORDER_COLOR, self.width - 1, 0, 1, self.height, con, g);
     }
@@ -74,11 +75,13 @@ impl Game {
     }
 }
 
+
 pub struct Paddle {
     pub x: i32,
     y: i32,
     pub movement_direction: Movement,
-    length: i32
+    length: i32,
+    counter: i32
 }
 
 impl Paddle {
@@ -88,6 +91,7 @@ impl Paddle {
             y: y,
             movement_direction: Movement::Iddle,
             length: PADDLE_LENGTH,
+            counter: 0
         }
     }
 
@@ -99,6 +103,12 @@ impl Paddle {
     }
 
     pub fn update(&mut self) {
+        // Slow down the paddle, update it every second method call.
+        if self.counter == 1 {
+            self.counter = 0;
+            return
+        }
+        self.counter += 1;
         match self.movement_direction {
             Movement::Left => {
                 self.x -= SPEED;
