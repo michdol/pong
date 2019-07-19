@@ -21,18 +21,18 @@ fn main() {
 
     let mut game = Game::new(width, height);
     while let Some(event) = window.next() {
-        if let Some(Button::Keyboard(key)) = event.press_args() {
-            game.key_pressed(key);
+        if let Some(Button::Keyboard(_key)) = event.press_args() {
+            game.key_pressed(_key);
         }
-        if let Some(Button::Keyboard(key)) = event.release_args() {
-            game.key_released(key);
+        if let Some(Button::Keyboard(_key)) = event.release_args() {
+            game.key_released();
         }
 
         window.draw_2d(&event, |context, graphics| {
             clear([1.0; 4], graphics);
             game.draw(&context, graphics);
         });
-        event.update(|arg| {
+        event.update(|_arg| {
             game.update();
         });
     }

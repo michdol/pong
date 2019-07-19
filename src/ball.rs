@@ -1,13 +1,16 @@
-use piston_window::{Context, G2d, Key};
+use piston_window::{Context, G2d};
 use piston_window::types::Color;
 
-use crate::drawing::{draw_rectangle, draw_block};
+use crate::drawing::{draw_block};
 use crate::game::{Movement, SPEED};
-use crate::paddle::{Paddle, PADDLE_LENGTH};
+use crate::paddle::{Paddle};
 
 const BALL_COLOR: Color = [0.984, 0.537, 0.56, 1.0];
+
+const FAST_SPEED_FACTOR: i32 = 10;
 const DEFAULT_SPEED_FACTOR: i32 = 15;
 const SLOW_SPEED_FACTOR: i32 = 25;
+const SPEED_ZERO: i32 = 99999999;
 
 pub struct Ball {
     pub x: i32,
@@ -20,7 +23,6 @@ pub struct Ball {
     counter_y: i32,
 }
 
-
 impl Ball {
     pub fn new (x: i32, y: i32) -> Ball {
         Ball {
@@ -28,7 +30,7 @@ impl Ball {
             y: y,
             x_direction: Movement::Left,
             y_direction: Movement::Down,
-            x_speed_factor: SLOW_SPEED_FACTOR,
+            x_speed_factor: SPEED_ZERO,
             y_speed_factor: SLOW_SPEED_FACTOR,
             counter_x: 0,
             counter_y: 0,
@@ -45,6 +47,9 @@ impl Ball {
     }
 
     pub fn update_x(&mut self) {
+        if self.x_speed_factor == SPEED_ZERO {
+            return
+        }
         if self.counter_x != self.x_speed_factor {
             self.counter_x += 1;
             return
@@ -58,6 +63,9 @@ impl Ball {
     }
 
     pub fn update_y(&mut self) {
+        if self.y_speed_factor == SPEED_ZERO {
+            return
+        }
         if self.counter_y != self.y_speed_factor {
             self.counter_y += 1;
             return
@@ -87,11 +95,26 @@ impl Ball {
     }
 
     pub fn detect_ball_paddle_collision(&mut self, paddle: &Paddle) {
-        if self.y == paddle.y && self.x >= paddle.x && self.x <= paddle.x + 5 {
-            self.y_direction = self.y_direction.opposite();
-            self.y -= 2;
+        if self.y == paddle.y {
+            if self.x == paddle.x || self.x == paddle.x + 4 {
+                self.y_direction = self.y_direction.opposite();
+                self.y_speed_factor = SLOW_SPEED_FACTOR;
+                self.x_speed_factor = FAST_SPEED_FACTOR;
+                self.y -= 2;
+            } else if self.x == paddle.x + 1 || self.x == paddle.x + 3 {
+                self.y_direction = self.y_direction.opposite();
+                self.y_speed_factor = DEFAULT_SPEED_FACTOR;
+                self.x_speed_factor = DEFAULT_SPEED_FACTOR;
+                self.y -= 2;
+            } else if self.x == paddle.x + 2 {
+                self.y_direction = self.y_direction.opposite();
+                self.y_speed_factor = FAST_SPEED_FACTOR;
+                self.x_speed_factor = SPEED_ZERO;
+                self.y -= 2;
+            }
         }
     }
+
 
     pub fn reset(&mut self) {
         self.x = 15;

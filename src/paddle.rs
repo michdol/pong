@@ -1,7 +1,7 @@
-use piston_window::{Context, G2d, Key};
+use piston_window::{Context, G2d};
 use piston_window::types::Color;
 
-use crate::drawing::{draw_rectangle, draw_block};
+use crate::drawing::{draw_block};
 use crate::game::{Movement, SPEED};
 
 pub const PADDLE_LENGTH: i32 = 5;
